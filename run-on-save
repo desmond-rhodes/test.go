@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+relative_path() {
+	[ ! -z "${2}" ] && realpath --relative-to="${2}" "${1}" || echo "${1}"
+}
+
+fmt_package() {
+	[ $(echo "${1}" | grep -om1 '^.') = '.' ] && echo "${1}" || echo "./${1}"
+}
+
+dispatch_test() {
+	printf '+ go test -v %s\n\n' "${1}"
+	go test -v "${1}"
+}
+
+session_time() { date '+%Y/%m/%d %H:%M:%S'; }
+
+session_start() { printf 'START [%s]\n\n' "$(session_time)"; }
+
+session_finish() { printf '\nFINISH [%s]\n\n' "$(session_time)"; }
+
+package=$(fmt_package "$(relative_path "${1}" "${2}")")
+session_start
+set -e
+trap session_finish 0
+time dispatch_test "${package}"
