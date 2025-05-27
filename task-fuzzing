@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+time_limit='30s'
+
+relative_path() {
+	[ ! -z "${2}" ] && realpath --relative-to="${2}" "${1}" || echo "${1}"
+}
+
+fmt_package() {
+	[ $(echo "${1}" | grep -om1 '^.') = '.' ] && echo "${1}" || echo "./${1}"
+}
+
+dispatch_test() {
+	printf '+ go test -v -fuzz=. -run=^$ -fuzztime %s %s\n\n' "${time_limit}" "${1}"
+	go test -v -fuzz=. -run=^$ -fuzztime "${time_limit}" "${1}"
+}
+
+package=$(fmt_package "$(relative_path "${1}" "${2}")")
+dispatch_test "${package}"
+
+exit 0
